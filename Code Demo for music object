@@ -27,6 +27,10 @@ void loop() {
   bool t3 = digitalRead(A3);
 
   // establish an analog input at pin A0, and store the input in a variable
+  // currently the analog value is from 0 to 658, and takes the form of a 
+  //turn dial. This input method is sturdy, accurate, and has a long range of values. 
+  // When the turn dial turns counter clockwise, the value increases. When turned clockwise
+  // it decreases.
 int value1 = analogRead(A0);
 
 //create the variables that will be used to determine the current pitch of the sounds.
@@ -93,7 +97,7 @@ else{
   Serial.println("zero");
 }
 
-// if the bottom touch key is being pressed, tell me, and tell me the current sound pitch of it.
+// if the bottom touch key is being pressed by a user, tell me, and tell me the current sound pitch of it.
 // the device also plays a tone with the current pitch setting until you let go of the sensor.
   if(t2 == 1){
 //    tone(6, pitch);
@@ -108,11 +112,5 @@ else{
 //    tone(6, pitch2);
     Serial.println("pressed2");
     Serial.print(pitch2);
-  }
-
-
-  
-
-
-      
+  }      
 }
