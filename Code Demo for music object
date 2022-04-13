@@ -1,0 +1,118 @@
+
+/*
+ Modified by Ethan Day 
+ April 12 2022
+ Code Demo assignment
+The code in this demo is all mine, other than the syntax learned from digital
+and analog examples such as AnalogInput, toneMelody, and button. This is a simpler
+version of my device software, using buzzer programming and simple tone with
+various pitches instead of complex MIDI sounds. 
+Neopixel code not included yet, I need to solder pins onto them first.
+Neopixel library is installed, and the Neopixel states would change with the 
+7 states, just like 'pitch' and 'pitch2' do in this demo. 
+
+
+*/
+#include <Adafruit_NeoPixel.h>
+void setup() {
+
+
+}
+
+void loop() {
+//set up analog variables and pitch variables
+
+//establish the 2 touch sensor keys on pins A2 and A3 to be digital inputs
+  bool t2 = digitalRead(A2);
+  bool t3 = digitalRead(A3);
+
+  // establish an analog input at pin A0, and store the input in a variable
+int value1 = analogRead(A0);
+
+//create the variables that will be used to determine the current pitch of the sounds.
+// pitch is used for the bottom key, and pitch2 is used for the top key. 
+float pitch;
+float pitch2;
+
+
+//start the serial monitor and have a delay speed of 100m/s
+  Serial.begin(9600);
+  delay(100);
+
+  //show me the value of the analog read
+      Serial.println("value 1");
+  Serial.println(value1);
+  
+// this is the first state: if the value of the analog read is between 91 and 1, 
+// then make the current state "state 1". In state 1, the pitches of the 2 touch sensors are
+// 30 for the bottom one, and 45 for the top one. Repeat this if statement 7 times for all 
+// 7 states, each having higher pitch numbers, and a range of analog data greater than the last.
+// I've essentially taken the analog data and turned it into digital data with 7 possibilites
+// for convenience purposes
+if(value1 >0 && value1 <91){
+  Serial.println("state 1");
+  pitch = 30;
+  pitch2 = 45;
+}
+if(value1 >=91 && value1 <181){
+  Serial.println("state 2");
+  pitch = 60;
+  pitch2 = 75;
+}
+if(value1 >=181 && value1 <271){
+  Serial.println("state 3");
+    pitch = 90;
+  pitch2 = 115;
+}
+if(value1 >=271 && value1 <361){
+  Serial.println("state 4");
+      pitch = 130;
+  pitch2 = 145;
+}
+if(value1 >=361 && value1 <451){
+  Serial.println("state 5");
+      pitch = 145;
+  pitch2 = 160;
+}
+
+if(value1 >=451 && value1 <541){
+  Serial.println("state 6");
+      pitch = 175;
+  pitch2 = 190;
+};
+if(value1 >=541 && value1 <659){
+  Serial.println("state 7");
+      pitch = 215;
+  pitch2 = 230;
+}
+
+// if the analog read is 0, then the state is just zero instead of 1-7. This part ideally
+// will have the pitches both be set to 0, but I'm still ironing out a way to do this without
+// messing up other values. 
+else{
+  Serial.println("zero");
+}
+
+// if the bottom touch key is being pressed, tell me, and tell me the current sound pitch of it.
+// the device also plays a tone with the current pitch setting until you let go of the sensor.
+  if(t2 == 1){
+//    tone(6, pitch);
+    Serial.println("pressed");
+    Serial.print(pitch);
+  }
+
+  // same thing as the if statement before, but for the top touch key, and it uses the other 
+  //pitch variable. This input also uses pin 6 like the first one, since my touch sensor 
+  //is a 2-in-1. 
+    if(t3 == 1){
+//    tone(6, pitch2);
+    Serial.println("pressed2");
+    Serial.print(pitch2);
+  }
+
+
+  
+
+
+      
+}
