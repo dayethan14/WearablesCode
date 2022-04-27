@@ -1,0 +1,242 @@
+
+/*
+ Modified by Ethan Day 
+ April 12 2022
+ Process Journal assignment
+The code in this demo is all mine, other than the syntax learned from digital
+and analog examples such as analogInput, toneMelody, and button, as well as the occasional 
+commented lines for reminder purposes, such as the neopixel comments from the original code. 
+Neopixel code is included from the adafruit library. 
+The 7 states play notes up and down the C major scale, also including the minor notes on the higher keys.
+*/
+
+// This code is all precursor code that includes the needed variables and libraries/syntaxes needed to
+// code the external Neopixel strip. All comes from Adafruit_Neopixel example. 
+
+
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+ #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
+#endif
+
+// Which pin on the Arduino is connected to the NeoPixels?
+#define PIN        2 // On Trinket or Gemma, suggest changing this to 1
+
+// How many NeoPixels are attached to the Arduino?
+#define NUMPIXELS 8 // Popular NeoPixel ring size
+
+// When setting up the NeoPixel library, we tell it how many pixels,
+// and which pin to use to send signals. Note that for older NeoPixel
+// strips you might need to change the third parameter -- see the
+// strandtest example for more information on possible values.
+Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+
+#define DELAYVAL 500 // Time (in milliseconds) to pause between pixels
+
+void setup() {
+  Serial.begin(9600);
+
+
+// Neopixel strip setup code from the Adafruit_Neopixel example in the adafruit library.
+// Starts the pixel functionality here. 
+
+
+#if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
+  clock_prescale_set(clock_div_1);
+#endif
+  // END of Trinket-specific code.
+
+  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+
+}
+
+void loop() {
+//set up analog variables and pitch variables
+
+//establish the 2 touch sensor keys on pins A2 and A3 to be digital inputs
+// "bool" syntax comes from the button example/demo in arduino. 
+
+
+  bool t2 = digitalRead(A2);
+  bool t3 = digitalRead(A3);
+
+  
+
+  // establish an analog input at pin A0, and store the input in a variable
+  // currently the analog value is from 0 to 658, and takes the form of a 
+  //turn dial. This input method is sturdy, accurate, and has a long range of values. 
+  // When the turn dial turns counter clockwise, the value increases. When turned clockwise
+  // it decreases.
+
+  
+  // Syntax "analogRead" comes from the analogInput demo example. 
+int value1 = analogRead(A0);
+
+//create the variables that will be used to determine the current pitch of the sounds. "Float" syntax
+// comes from arduino demos such as analogRead. 
+// pitch is used for the bottom key, and pitch2 is used for the top key. 
+
+
+float pitch;
+float pitch2;
+
+
+//start the serial monitor and have a delay speed of 100m/s
+
+
+  //show me the numerical value of the analog read
+
+  
+      Serial.println("value");
+  Serial.println(value1);
+  
+// this is the C/C# pitch state: if the value of the analog read is between 91 and 1, 
+// then make the current state "C/C#", and serial write that for me to see, in order to
+// better keep track of the music I'm playing. In C/C#, the pitches attatched to the 2 touch sensors are
+// 261 for the bottom one, and 277 for the top one. These pitch numbers are the exact frequencies of the proper musical notes,
+// with C being 261 and C# being 277. C/C# is the lowest pitch state, so everytime the analog read makes the state transition,
+// the top and lower notes get higher on the keyboard, going all the way from C to D E F G A B and their minor notes, eventually 
+// leading to the C/C# in a higher octave. 
+// Repeat this if statement 7 times for all 7 states, each having higher pitch numbers, 
+// and a range of analog data greater than the previous 'if'.
+// I've essentially taken the analog data and turned it into digital data with 7 possibilites, with each state containing
+// a higher and lower note on a piano keyboard. The reason the analog boundary conditions are the way they are is because
+// each range is one 7th of the highest analog read, around 680. Splitting 680 into 7 states results in the current analog value
+// conditions. 
+
+// I've now included the Neopixel strip code, which will display 1 pixel in the C/C# state,
+// and increase the amount of pixels it displays as the state goes up, with high C/C# 
+// having all 8 pixels lit up. 
+
+
+if(value1 >0 && value1 <91){
+  Serial.println("C/C#");
+  
+  pitch = 261;
+  pitch2 = 277;
+  pixels.setPixelColor(0, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(1, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(2, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(3, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(4, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(5, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(6, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(7, pixels.Color(0, 0, 0));
+}
+if(value1 >=91 && value1 <181){
+  Serial.println("D/D#");
+  pitch = 293;
+  pitch2 = 311;
+    pixels.setPixelColor(0, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(1, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(2, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(3, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(4, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(5, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(6, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(7, pixels.Color(0, 0, 0));
+}
+if(value1 >=181 && value1 <271){
+  Serial.println("E/F");
+    pitch = 329;
+  pitch2 = 349;
+    pixels.setPixelColor(0, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(1, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(2, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(3, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(4, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(5, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(6, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(7, pixels.Color(0, 0, 0));
+}
+if(value1 >=271 && value1 <361){
+  Serial.println("F#/G");
+      pitch = 369;
+  pitch2 = 392;
+    pixels.setPixelColor(0, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(1, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(2, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(3, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(4, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(5, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(6, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(7, pixels.Color(0, 0, 0));
+}
+if(value1 >=361 && value1 <451){
+  Serial.println("G#/A");
+      pitch = 415;
+  pitch2 = 440;
+    pixels.setPixelColor(0, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(1, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(2, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(3, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(4, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(5, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(6, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(7, pixels.Color(0, 0, 0));
+}
+
+if(value1 >=451 && value1 <541){
+  Serial.println("A#/B");
+      pitch = 466;
+  pitch2 = 493;
+    pixels.setPixelColor(0, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(1, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(2, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(3, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(4, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(5, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(6, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(7, pixels.Color(0, 0, 0));
+};
+if(value1 >=541 && value1 <680){
+  Serial.println("C/C#");
+      pitch = 523;
+  pitch2 = 554;
+     pixels.setPixelColor(0, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(1, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(2, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(3, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(4, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(5, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(6, pixels.Color(0, 20, 0));
+  pixels.setPixelColor(7, pixels.Color(0, 0, 0));
+}
+
+// if the analog read is 0, then the state is just zero instead of a note on the musical keyboard. 
+else{
+  Serial.println("zero");
+}
+
+// if the bottom touch key is being pressed by a user, tell me, and tell me the current numerical pitch of it.
+// the device also plays a tone with the current pitch setting until you let go of the sensor.
+  if(t2 == 1){
+    tone(6, pitch2);
+    Serial.println("pressed");
+    Serial.print(pitch);
+  }
+    if(t2 == 0 && t3 ==0){
+    noTone(6);
+  }
+
+
+  // same thing as the if statement before, but for the top touch key, and it uses the other 
+  //pitch variable. This input also uses pin 6 like the first one, since my touch sensor 
+  //is a 2-in-1. 
+    if(t3 == 1){
+    tone(6, pitch);
+    Serial.println("pressed2");
+    Serial.print(pitch2);
+  }      
+
+
+
+//Finally, after all other code, show the updated pixels after processing the current state of the code.
+// This allows the pixels to continuously update as the states change. 
+    
+
+   pixels.show();   // Send the updated pixel colors to the hardware.
+
+        delay(100);
+  
+}
