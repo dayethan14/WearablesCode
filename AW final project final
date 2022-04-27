@@ -1,0 +1,735 @@
+
+
+
+/***************************************************************************
+
+* Modified by Ethan Day on April 22nd, 2022
+* Final Project - Motion Capture Arm
+* Includes syntax/code from the following examples:
+* Sketch for the MPU9250_WE library, MPU9250_alldata
+* Adafruit external neopixel 
+* Adafruit Hello_accelerometer
+* Adafruit Hello_neopixel 
+***************************************************************************/
+
+#include <MPU9250_WE.h>
+#include <Wire.h>
+#define MPU9250_ADDR 0x68
+#include <Adafruit_CircuitPlayground.h>
+#define NEOPIX_PIN    A2
+#define NUM_PIXELS    8
+
+  int SideWaysLeft;
+  int SideWaysRight;
+  int Centre;
+
+Adafruit_CPlay_NeoPixel strip = Adafruit_CPlay_NeoPixel(NUM_PIXELS, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
+
+MPU9250_WE myMPU9250 = MPU9250_WE(MPU9250_ADDR);
+
+void setup() {
+
+  SideWaysLeft = 0;
+  SideWaysRight = 0;
+  Centre = 1;
+
+  CircuitPlayground.begin();
+    strip.begin();
+    strip.clear();
+    strip.show();
+
+    //code after this point until the void loop is just MPU9250 (the IMU sensor) setup code that came with the example
+    
+  Serial.begin(115200);
+  Wire.begin();
+  if(!myMPU9250.init()){
+    Serial.println("MPU9250 does not respond");
+  }
+  else{
+    Serial.println("MPU9250 is connected");
+  }
+
+  myMPU9250.enableGyrDLPF();
+
+  myMPU9250.setGyrDLPF(MPU9250_DLPF_6);  // lowest noise
+  
+  /*  MPU9250_GYRO_RANGE_250       250 degrees per second (default)
+   *  MPU9250_GYRO_RANGE_500       500 degrees per second
+   *  MPU9250_GYRO_RANGE_1000     1000 degrees per second
+   *  MPU9250_GYRO_RANGE_2000     2000 degrees per second
+   */
+  myMPU9250.setGyrRange(MPU9250_GYRO_RANGE_250);
+
+  /*  MPU9250_ACC_RANGE_2G      2 g   
+   *  MPU9250_ACC_RANGE_4G      4 g
+   *  MPU9250_ACC_RANGE_8G      8 g   
+   *  MPU9250_ACC_RANGE_16G    16 g
+   */
+  myMPU9250.setAccRange(MPU9250_ACC_RANGE_2G);
+
+ /*  Enable/disable the digital low pass filter for the accelerometer 
+   *  If disabled the bandwidth is 1.13 kHz, delay is 0.75 ms, output rate is 4 kHz
+   */
+  myMPU9250.enableAccDLPF(true);
+
+  /*  Digital low pass filter (DLPF) for the accelerometer, if enabled 
+   *  MPU9250_DPLF_0, MPU9250_DPLF_2, ...... MPU9250_DPLF_7 
+   *   DLPF     Bandwidth [Hz]      Delay [ms]    Output rate [kHz]
+   *     0           460               1.94           1
+   *     1           184               5.80           1
+   *     2            92               7.80           1
+   *     3            41              11.80           1
+   *     4            20              19.80           1
+   *     5            10              35.70           1
+   *     6             5              66.96           1
+   *     7           460               1.94           1
+   */
+  myMPU9250.setAccDLPF(MPU9250_DLPF_6);  // lowest noise
+
+  Serial.print("Turn your MPU9250 slowly(!) in all directions to determine ");
+  Serial.println(" the min/max raw acceleration values.");
+  Serial.println("For the gyroscope offsets just note the gyro raw values for the unmoved sensor");
+  delay(1000);
+}
+
+void loop() {
+
+  // get the values for the accelerometer and gyroscope inside the MPU9250, and set them to variables
+  xyzFloat accRaw;
+  xyzFloat gyrRaw;
+  accRaw = myMPU9250.getAccRawValues();
+  gyrRaw = myMPU9250.getGyrRawValues();
+
+
+
+//The following if statements create the motion tracking output method.
+// There are 12 different possible states, all dependant on the movement of the user. 
+// The gyroscope and accelerometer data of the external IMU is used, as well as the
+// CPX built in accelerometer data. 
+// In order for states to be changed, there are many ranges and conditions set in place,
+// involving both the IMU movement on the bicep, and the accelerometer movement on the forearm
+// each state has a unique Neopixel animation, utilizing both the strip and the built in Neopixel ring on the CPX
+// The different animations of the different states vary in speed, pattern, direction, and colour. 
+
+//ANGLE 
+// if the user's arm is turned greatly clockwise, then display only a pattern of rotation. 
+if(accRaw.x > -16000 && CircuitPlayground.motionX() > -6 && accRaw.y < 9000 && accRaw.y > -11000) {
+   Serial.println("turn");
+      strip.clear();
+      strip.show();
+      CircuitPlayground.clearPixels();
+          delay(50);
+    CircuitPlayground.setPixelColor(5, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+    delay(50);
+CircuitPlayground.setPixelColor(6, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(7, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(8, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(9, 40,  0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+    delay(50);
+    CircuitPlayground.setPixelColor(0, 40,   0, 40);
+        delay(50);
+    CircuitPlayground.clearPixels();
+    delay(50);
+CircuitPlayground.setPixelColor(1, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(2, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(3, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(4, 40,  0, 40);
+}
+
+//ANGLE BEND
+// if the user's arm is turned greatly clockwise, and their forearm is bent, then display only a pattern of rotation in the other direction. 
+if(accRaw.x > -16000 && CircuitPlayground.motionX() < -6 && accRaw.y < 9000 && accRaw.y > -11000) {
+      strip.clear();
+      strip.show();
+      CircuitPlayground.clearPixels();
+          delay(50);
+    CircuitPlayground.setPixelColor(4, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+    delay(50);
+CircuitPlayground.setPixelColor(3, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(2, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(1, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(0, 40,  0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+    delay(50);
+    CircuitPlayground.setPixelColor(9, 40,   0, 40);
+        delay(50);
+    CircuitPlayground.clearPixels();
+    delay(50);
+CircuitPlayground.setPixelColor(8, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(7, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(6, 40,   0, 40);
+    delay(50);
+CircuitPlayground.clearPixels();
+delay(50);
+CircuitPlayground.setPixelColor(5, 40,  0, 40);
+}
+
+
+//NEUTRAL STRAIGHT
+// if the user's arm is held straight in front of them with their forearm flat and straight, then display a purple trail pattern
+if(accRaw.y < 9000 && accRaw.y > -9000 && CircuitPlayground.motionY() < 7 && accRaw.x < -16000 && abs(gyrRaw.x) < 7000){
+
+        strip.clear();
+      strip.show();
+
+
+        strip.setPixelColor(0,   20,   0, 20);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(1,   20,   0, 20);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(2,   20,   0, 20);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(3,   20,   0, 20);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(4,   20,   0, 20);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(5,   20,   0, 20);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(6,   20,   0, 20);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(7,   20,   0, 20);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+      CircuitPlayground.clearPixels();
+          delay(30);
+    CircuitPlayground.setPixelColor(5, 40,   0, 40);
+    CircuitPlayground.setPixelColor(4, 40,  0, 40);
+    delay(30);
+CircuitPlayground.clearPixels();
+    delay(30);
+CircuitPlayground.setPixelColor(6, 40,   0, 40);
+CircuitPlayground.setPixelColor(3, 40,   0, 40);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(7, 40,   0, 40);
+CircuitPlayground.setPixelColor(2, 40,   0, 40);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(8, 40,   0, 40);
+CircuitPlayground.setPixelColor(1, 40,   0, 40);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(9, 40,  0, 40);
+    CircuitPlayground.setPixelColor(0, 40,   0, 40);
+    delay(30);
+CircuitPlayground.clearPixels();
+  
+}
+  
+
+
+//NEUTRAL BEND
+// if the user's arm is held straight in front of them with their forearm bent and straight, then display a downwards pattern on only the CPX, signifying
+// a half-pattern due to the arm being bent. 
+if(accRaw.y < 9000 &&  accRaw.y > -9000 && CircuitPlayground.motionY() >7 && accRaw.x < -16000 && abs(gyrRaw.x) < 7000){
+
+        strip.clear();
+      strip.show();
+      CircuitPlayground.clearPixels();
+          delay(30);
+    CircuitPlayground.setPixelColor(9, 40,   0, 40);
+    CircuitPlayground.setPixelColor(0, 40,  0, 40);
+    delay(30);
+CircuitPlayground.clearPixels();
+    delay(30);
+CircuitPlayground.setPixelColor(8, 40,   0, 40);
+CircuitPlayground.setPixelColor(1, 40,   0, 40);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(7, 40,   0, 40);
+CircuitPlayground.setPixelColor(2, 40,   0, 40);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(6, 40,   0, 40);
+CircuitPlayground.setPixelColor(3, 40,   0, 40);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(5, 40,  0, 40);
+    CircuitPlayground.setPixelColor(4, 40,   0, 40);
+    delay(30);
+CircuitPlayground.clearPixels();
+}
+
+
+//SKY
+// if the user's arm is held above them towards the sky, then display an orange trail pattern
+if(accRaw.y > 9000 && CircuitPlayground.motionY() > 7 &&  abs(gyrRaw.x) < 7000){
+
+        strip.clear();
+      strip.show();
+        strip.setPixelColor(0,   255,   40, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(1,   255,   40, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(2, 255,   40, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(3,  255,   40, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(4,  255,   40, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(5,  255,   40, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(6,  255,   40, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(7,  255,   40, 0);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+      CircuitPlayground.clearPixels();
+          delay(30);
+    CircuitPlayground.setPixelColor(5, 255,   40, 0);
+    CircuitPlayground.setPixelColor(4, 255,   40, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+    delay(30);
+CircuitPlayground.setPixelColor(6, 255,   40, 0);
+CircuitPlayground.setPixelColor(3, 255,   40, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(7, 255,   40, 0);
+CircuitPlayground.setPixelColor(2, 255,   40, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(8, 255,   40, 0);
+CircuitPlayground.setPixelColor(1, 255,   40, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(9, 255,   40, 0);
+    CircuitPlayground.setPixelColor(0, 255,   40, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+  
+}
+
+
+//SKY BEND
+// if the user's arm is held above them towards the sky, and their elbow/forearm is bent, then display an orange trail pattern on only the CPX
+if(accRaw.y > 9000 && CircuitPlayground.motionY() < 6 &&  abs(gyrRaw.x) < 7000){
+
+        strip.clear();
+      strip.show();
+      CircuitPlayground.clearPixels();
+          delay(30);
+    CircuitPlayground.setPixelColor(5, 255,   40, 0);
+    CircuitPlayground.setPixelColor(4, 255,   40, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+    delay(30);
+CircuitPlayground.setPixelColor(6, 255,   40, 0);
+CircuitPlayground.setPixelColor(3, 255,   40, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(7, 255,   40, 0);
+CircuitPlayground.setPixelColor(2, 255,   40, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(8, 255,   40, 0);
+CircuitPlayground.setPixelColor(1, 255,   40, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(9, 255,   40, 0);
+    CircuitPlayground.setPixelColor(0, 255,   40, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+  
+}
+
+//GROUND
+// if the user's arm is held down below them towards the ground, then display a green trail pattern
+if(accRaw.y < -9000 && CircuitPlayground.motionY() < -7 && abs(gyrRaw.x) < 7000){
+
+        strip.clear();
+      strip.show();
+        strip.setPixelColor(0,   0,   90, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(1,    0,   90, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(2,  0,   90, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(3,   0,   90, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(4,   0,   90, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(5,   0,   90, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(6,   0,   90, 0);
+      delay(15);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+  strip.setPixelColor(7,   0,   90, 0);
+      strip.show();
+              strip.clear();
+                    delay(15);
+      strip.show();
+      CircuitPlayground.clearPixels();
+          delay(30);
+    CircuitPlayground.setPixelColor(5,  0,   90, 0);
+    CircuitPlayground.setPixelColor(4,  0,   90, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+    delay(30);
+CircuitPlayground.setPixelColor(6,  0,   90, 0);
+CircuitPlayground.setPixelColor(3,  0,   90, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(7,  0,   90, 0);
+CircuitPlayground.setPixelColor(2,  0,   90, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(8,  0,   90, 0);
+CircuitPlayground.setPixelColor(1,  0,   90, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(9,  0,   90, 0);
+    CircuitPlayground.setPixelColor(0,  0,   90, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+  
+}
+
+//GROUND BEND
+// if the user's arm is held down below them towards the ground, and their forearm is bent, then display a green trail pattern 
+// on only the CPX
+if(accRaw.y < -9000 && CircuitPlayground.motionY() > -7 && abs(gyrRaw.x) < 7000){
+
+        strip.clear();
+      strip.show();
+      CircuitPlayground.clearPixels();
+          delay(30);
+    CircuitPlayground.setPixelColor(5,  0,   90, 0);
+    CircuitPlayground.setPixelColor(4,  0,   90, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+    delay(30);
+CircuitPlayground.setPixelColor(6,  0,   90, 0);
+CircuitPlayground.setPixelColor(3,  0,   90, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(7,  0,   90, 0);
+CircuitPlayground.setPixelColor(2,  0,   90, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(8,  0,   90, 0);
+CircuitPlayground.setPixelColor(1,  0,   90, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+delay(30);
+CircuitPlayground.setPixelColor(9,  0,   90, 0);
+    CircuitPlayground.setPixelColor(0,  0,   90, 0);
+    delay(30);
+CircuitPlayground.clearPixels();
+  
+}
+
+
+
+
+// the following if statements are part of the else function since they are seperated from the other functions, overriding 
+// them unless code states not to. No matter what is happening, in the device, if rotation of the arm happens, then the rotation animation shows up. 
+else{
+
+//LEFT TURN
+// if the user's arm is held flat in front of them and are currently rotating their whole arm to their left, display a red trail pattern
+if(gyrRaw.x <(-7000) && CircuitPlayground.motionY() < 7){
+   Serial.println("left turn");
+      CircuitPlayground.setPixelColor(5, 0,   0, 0);
+CircuitPlayground.setPixelColor(6, 0,   0, 0);
+CircuitPlayground.setPixelColor(7, 0,   0, 0);
+CircuitPlayground.setPixelColor(8, 0,  0, 0);
+CircuitPlayground.setPixelColor(9, 0,  0, 0);
+
+  strip.setPixelColor(0,   20,   0, 0);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(1,   20,   0, 0);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(2,   20,   0, 0);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(3,   20,   0, 0);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(4,   20,   0, 0);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(5,   20,   0, 0);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(6,   20,   0, 0);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(7,   20,   0, 0);
+      strip.show();
+
+    CircuitPlayground.setPixelColor(4, 40,   0, 0);
+    delay(50);
+CircuitPlayground.setPixelColor(3, 40,   0, 0);
+delay(50);
+CircuitPlayground.setPixelColor(2, 40,   0, 0);
+delay(50);
+CircuitPlayground.setPixelColor(1, 40,   0, 0);
+delay(50);
+CircuitPlayground.setPixelColor(0, 40,  0, 0);
+}
+//LEFT TURN HALF ARM
+// if the user's arm is held in front of them with their forearm bent upwards and are currently rotating 
+// their whole arm to their left, display a red trail pattern on only the left of the CPX 
+if(CircuitPlayground.motionY() > 7 && gyrRaw.x <(-7000)){
+      strip.clear();
+      strip.show();
+      CircuitPlayground.clearPixels();
+    CircuitPlayground.setPixelColor(0, 40,   0, 0);
+    delay(50);
+CircuitPlayground.setPixelColor(1, 40,   0, 0);
+delay(50);
+CircuitPlayground.setPixelColor(2, 40,   0, 0);
+delay(50);
+CircuitPlayground.setPixelColor(3, 40,   0, 0);
+delay(50);
+CircuitPlayground.setPixelColor(4, 40,  0, 0);
+}
+
+// RIGHT TURN
+// if the user's arm is held flat in front of them and are currently rotating their whole arm to their right, display a blue trail pattern
+if(gyrRaw.x >(7000)&& CircuitPlayground.motionY() < 7){
+   Serial.println("right turn");
+
+   CircuitPlayground.setPixelColor(0, 0,   0, 0);
+CircuitPlayground.setPixelColor(1, 0,   0, 0);
+CircuitPlayground.setPixelColor(2, 0,   0, 0);
+CircuitPlayground.setPixelColor(3, 0,  0, 0);
+CircuitPlayground.setPixelColor(4, 0,  0, 0);
+  strip.setPixelColor(0,   0,   0, 20);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(1,   0,   0, 20);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(2,   0,   0, 20);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(3,   0,   0, 20);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(4,   0,   0, 20);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(5,   0,   0, 20);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(6,   0,   0, 20);
+      delay(35);
+      strip.show();
+  strip.setPixelColor(7,   0,   0, 20);
+      strip.show();
+  // but for the external strip, must call show()
+    CircuitPlayground.setPixelColor(5, 0,   0, 40);
+    delay(50);
+CircuitPlayground.setPixelColor(6, 0,   0, 40);
+delay(50);
+CircuitPlayground.setPixelColor(7, 0,   0, 40);
+delay(50);
+CircuitPlayground.setPixelColor(8, 0,   0, 40);
+delay(50);
+CircuitPlayground.setPixelColor(9, 0,  0, 40);
+}
+
+//RIGHT TURN HALF ARM
+// if the user's arm is held in front of them with their forearm bent upwards and are currently rotating 
+// their whole arm to their right, display a blue trail pattern on only the right of the CPX 
+if(CircuitPlayground.motionY() > 7 && gyrRaw.x >(7000)){
+      strip.clear();
+      strip.show();
+      CircuitPlayground.clearPixels();
+    CircuitPlayground.setPixelColor(9, 0,   0, 40);
+    delay(50);
+CircuitPlayground.setPixelColor(8, 0,   0, 40);
+delay(50);
+CircuitPlayground.setPixelColor(7, 0,   0, 40);
+delay(50);
+CircuitPlayground.setPixelColor(6, 0,   0, 40);
+delay(50);
+CircuitPlayground.setPixelColor(5, 0,  0, 40);
+  
+}   
+
+}
+
+//SERIAL MONITOR
+// Here I have the serial monitor showing me relevant information updated every 200ms. 
+// This mostly helped me come up with the correct number values and if statements needed
+// to display different outputs based on arm movements. I display the IMU gyro and accel values
+// in X and Y as well as the X Y Z of the CPX accelerometer. 
+// I also used the serial monitor to check the "sidewaysleft" and "sidewaysright"
+// variables that tell me when it detects rapid movement in a direction in real time, not the same as
+// detecting when a number steadily goes over a value, which I would use to measure the current angle etc.
+  Serial.println("Acceleration raw values without offset:");
+  Serial.print(accRaw.x);
+  Serial.print("   ");
+  Serial.print(accRaw.y);
+  Serial.println("   ");
+
+  Serial.println("Gyroscope raw values without offset:");
+  Serial.print(gyrRaw.x);
+  Serial.print("   ");
+  Serial.print(gyrRaw.y);
+  Serial.print("   ");
+  Serial.println(gyrRaw.z);
+
+    Serial.println(CircuitPlayground.motionX());
+    Serial.println(CircuitPlayground.motionY());
+      Serial.println(CircuitPlayground.motionZ());
+      Serial.println("left");
+      Serial.println(SideWaysLeft);
+      Serial.println("middle");
+      Serial.println(Centre);
+      Serial.println("right");
+      Serial.println(SideWaysRight);
+
+
+
+  delay(200);
+}
